@@ -1,0 +1,219 @@
+.adm-header {
+  position: fixed;
+  top: 0;
+  left: 260px;
+  right: 0;
+  height: 64px;
+  background: #ffffff;
+  border-bottom: 1px solid #eceefb;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  z-index: 50;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+.adm-search {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+}
+
+.adm-search input {
+  width: 100%;
+  height: 40px;
+  border: 1px solid #e4e7f5;
+  background: #fafbff;
+  border-radius: 10px;
+  padding: 0 80px 0 38px;
+  font-size: 13px;
+  color: #1f2547;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.adm-search input:focus {
+  border-color: #7c5cf6;
+  box-shadow: 0 0 0 3px rgba(124, 92, 246, 0.12);
+}
+
+.adm-search input::placeholder {
+  color: #9aa0bd;
+}
+
+.adm-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #7c5cf6;
+}
+
+.adm-kbd {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 11px;
+  color: #6b7194;
+  background: #fff;
+  border: 1px solid #e4e7f5;
+  border-radius: 6px;
+  padding: 3px 8px;
+}
+
+.adm-header-right {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+}
+
+.adm-bell {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #2b3160;
+  display: flex;
+  padding: 6px;
+  border-radius: 8px;
+}
+
+.adm-bell:hover {
+  background: #f3f1ff;
+}
+
+.adm-bell-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: #ef4466;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #fff;
+}
+
+/* ===== Profile + dropdown ===== */
+.adm-profile-wrap {
+  position: relative;
+}
+
+.adm-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 10px;
+  font-family: inherit;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.adm-profile:hover {
+  background: #f3f1ff;
+}
+
+.adm-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c5cf6, #4f8df7);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adm-profile-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.adm-profile-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1f2547;
+}
+
+.adm-profile-role {
+  font-size: 11px;
+  color: #7c5cf6;
+}
+
+.adm-chevron {
+  color: #6b7194;
+  transition: transform 0.2s;
+}
+
+.adm-chevron.open {
+  transform: rotate(180deg);
+}
+
+.adm-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 180px;
+  background: #fff;
+  border: 1px solid #eceefb;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(60, 50, 140, 0.14);
+  padding: 6px;
+  z-index: 60;
+}
+
+.adm-menu-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: none;
+  background: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #2b3160;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+
+.adm-menu-item:hover {
+  background: #f3f1ff;
+  color: #5b3ae6;
+}
+
+.adm-menu-item.danger {
+  color: #e11d48;
+}
+
+.adm-menu-item.danger:hover {
+  background: #fff1f3;
+  color: #e11d48;
+}
+
+@media (max-width: 900px) {
+  .adm-header {
+    left: 0;
+    padding: 0 16px;
+  }
+  .adm-profile-text {
+    display: none;
+  }
+}

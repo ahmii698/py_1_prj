@@ -1,0 +1,267 @@
+/* ===== Teacher Sidebar ===== */
+.ts-sidebar {
+  --ts-primary: #7c5cfc;
+  --ts-text: #1e2150;
+  --ts-muted: #6b7194;
+  --ts-border: #e8eaf5;
+  --ts-bg: #ffffff;
+  --ts-active-bg: #efeaff;
+  width: 260px;
+  flex-shrink: 0;
+
+  /* FIX: sidebar hamesha screen ki height jitna rahe, page ke sath scroll na ho */
+  align-self: flex-start;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  height: 100dvh;       /* mobile browser ki address bar ke hisaab se sahi height */
+  max-height: 100dvh;
+
+  display: flex;
+  flex-direction: column;
+  background: var(--ts-bg);
+  border-right: 1px solid var(--ts-border);
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  box-sizing: border-box;
+  overflow: hidden;
+  z-index: 40;
+}
+
+.ts-sidebar *,
+.ts-sidebar *::before,
+.ts-sidebar *::after {
+  box-sizing: border-box;
+}
+
+/* ---------- Logo ---------- */
+.ts-logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 18px 16px;
+  flex-shrink: 0;
+}
+
+.ts-logo-icon {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #8b6cff, #6a49f0);
+  color: #fff;
+  box-shadow: 0 6px 14px rgba(124, 92, 252, 0.3);
+  flex-shrink: 0;
+}
+
+.ts-logo-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.ts-logo-text strong {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--ts-text);
+}
+
+.ts-logo-text small {
+  font-size: 10px;
+  color: var(--ts-muted);
+}
+
+/* ---------- Nav (sirf yeh hissa sidebar ke andar scroll hota hai) ---------- */
+.ts-nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 4px 12px 20px;
+}
+
+.ts-nav::-webkit-scrollbar {
+  width: 5px;
+}
+
+.ts-nav::-webkit-scrollbar-thumb {
+  background: #dcd8f0;
+  border-radius: 99px;
+}
+
+.ts-section {
+  margin-bottom: 6px;
+}
+
+.ts-section-title {
+  margin: 16px 0 6px;
+  padding: 0 10px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #4a4f80;
+}
+
+.ts-section ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Links aur Logout button ki styling bilkul ek jaisi */
+.ts-link,
+.ts-logout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin: 0;
+  padding: 9px 10px;
+  border: none;
+  border-left: 3px solid transparent;
+  border-radius: 9px;
+  background: transparent;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: normal;
+  color: var(--ts-text);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+
+.ts-link svg,
+.ts-logout svg {
+  color: var(--ts-muted);
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.ts-link:hover,
+.ts-logout:hover {
+  background: #f6f3ff;
+  color: var(--ts-primary);
+}
+
+.ts-link:hover svg,
+.ts-logout:hover svg {
+  color: var(--ts-primary);
+}
+
+.ts-link.active {
+  background: var(--ts-active-bg);
+  color: var(--ts-primary);
+  font-weight: 600;
+  border-left-color: var(--ts-primary);
+}
+
+.ts-link.active svg {
+  color: var(--ts-primary);
+}
+
+/* ---------- Dark mode ---------- */
+[data-theme="dark"] .ts-sidebar {
+  --ts-text: #e8eaff;
+  --ts-muted: #9aa0c7;
+  --ts-border: #2c2f55;
+  --ts-bg: #181a38;
+  --ts-active-bg: #2a2660;
+}
+
+[data-theme="dark"] .ts-section-title {
+  color: #8a90bd;
+}
+
+[data-theme="dark"] .ts-link:hover,
+[data-theme="dark"] .ts-logout:hover {
+  background: #232650;
+}
+
+/* ---------- Responsive (icons-only sidebar) ---------- */
+@media (max-width: 900px) {
+  /* FIX: sidebar poore page ki lambai tak stretch hota hai, to neeche khali grey jagah nahi dikhti */
+  .ts-sidebar {
+    position: relative;
+    align-self: stretch;
+    height: auto;
+    max-height: none;
+    min-height: 100vh;
+    overflow: visible;          /* taake andar ka nav sticky reh sake */
+    width: 64px;
+  }
+
+  /* icons list scroll ke sath screen pe rehti hai (sticky), background poora neeche tak rehta hai */
+  .ts-nav {
+    flex: 0 0 auto;
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    max-height: 100dvh;
+  }
+
+  .ts-logo-text,
+  .ts-section-title,
+  .ts-link span,
+  .ts-logout span {
+    display: none;
+  }
+
+  .ts-logo {
+    justify-content: center;
+    padding: 14px 0 10px;
+  }
+
+  .ts-nav {
+    padding: 4px 8px 16px;
+    scrollbar-width: none;      /* scrollbar chhupa do, jagah na ghere */
+  }
+
+  .ts-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* section titles hat gaye, to sections ke beech chhota divider */
+  .ts-section {
+    margin-bottom: 0;
+    padding: 6px 0;
+    border-top: 1px solid var(--ts-border);
+  }
+
+  .ts-section:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .ts-link,
+  .ts-logout {
+    justify-content: center;
+    padding: 11px 0;
+    border-left: none;          /* collapsed mode mein left border ki zarurat nahi */
+  }
+
+  .ts-link.active {
+    box-shadow: inset 3px 0 0 var(--ts-primary);
+  }
+}
+
+@media (max-width: 520px) {
+  .ts-sidebar {
+    width: 56px;
+  }
+
+  .ts-logo-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+  }
+
+  .ts-nav {
+    padding: 4px 6px 16px;
+  }
+}

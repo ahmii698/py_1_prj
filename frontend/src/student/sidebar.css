@@ -1,0 +1,286 @@
+.sb {
+  width: 240px;
+  min-width: 240px;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  background: #ffffff;
+  border-right: 1px solid #eef0f6;
+  display: flex;
+  flex-direction: column;
+  padding: 18px 14px;
+  overflow-y: auto;
+  box-sizing: border-box;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+
+.sb::-webkit-scrollbar {
+  width: 4px;
+}
+.sb::-webkit-scrollbar-thumb {
+  background: #e3e6f0;
+  border-radius: 4px;
+}
+
+/* Brand */
+.sb-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 6px 18px;
+}
+
+.sb-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #7c5cff, #5b3df5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 14px rgba(109, 74, 255, 0.35);
+  flex-shrink: 0;
+}
+
+.sb-brand-name {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1c1c3c;
+  line-height: 1.1;
+}
+
+.sb-brand-tag {
+  margin: 2px 0 0;
+  font-size: 9.5px;
+  color: #8a8fa8;
+  white-space: nowrap;
+}
+
+/* Nav */
+.sb-nav {
+  flex: 1;
+}
+
+.sb-section {
+  margin-bottom: 6px;
+}
+
+.sb-section-title {
+  margin: 16px 0 6px;
+  padding: 0 10px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #9a9fb5;
+}
+
+.sb-item {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  margin-bottom: 2px;
+  border: none;
+  background: transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4a4f6a;
+  text-align: left;
+  text-decoration: none;
+  box-sizing: border-box;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.sb-item:hover {
+  background: #f5f3ff;
+  color: #6d4aff;
+}
+
+.sb-item.active {
+  background: #ede9fe;
+  color: #6d4aff;
+  font-weight: 600;
+}
+
+.sb-item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  flex-shrink: 0;
+}
+
+.sb-item-label {
+  flex: 1;
+}
+
+.sb-badge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 9px;
+  background: #ff5d6c;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Promo card */
+.sb-promo {
+  position: relative;
+  margin-top: 16px;
+  padding: 16px 14px 18px;
+  border-radius: 14px;
+  background: linear-gradient(160deg, #f1edff, #e4dcff);
+  overflow: hidden;
+}
+
+.sb-promo p {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.5;
+  color: #2d2a5a;
+  position: relative;
+  z-index: 1;
+}
+
+.sb-promo-art {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 110px;
+  opacity: 0.95;
+}
+
+.sb-dots {
+  display: flex;
+  gap: 5px;
+  margin-top: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.sb-dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #c9bfff;
+}
+
+.sb-dots span.on {
+  background: #6d4aff;
+}
+
+/* ===== Responsive: mobile pe icons-only rail (ab hide nahi hota) ===== */
+@media (max-width: 900px) {
+  /* sidebar poore page ki lambai tak stretch hota hai, neeche khali jagah nahi */
+  .sb {
+    width: 64px;
+    min-width: 64px;
+    height: auto;
+    min-height: 100vh;
+    align-self: stretch;
+    position: relative;
+    overflow: visible;          /* taake andar ka nav sticky reh sake */
+    padding: 12px 8px;
+    z-index: 40;
+  }
+
+  /* text aur promo card chhupa do, sirf icons rakho */
+  .sb-brand-name,
+  .sb-brand-tag,
+  .sb-section-title,
+  .sb-item-label,
+  .sb-promo {
+    display: none;
+  }
+
+  .sb-brand {
+    justify-content: center;
+    padding: 0 0 12px;
+  }
+
+  /* icons ki list scroll ke sath screen pe rehti hai */
+  .sb-nav {
+    flex: 0 0 auto;
+    position: sticky;
+    top: 0;
+    max-height: calc(100vh - 64px);
+    max-height: calc(100dvh - 64px);   /* logout ke liye jagah chhodi */
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+  }
+
+  .sb-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* titles hat gaye, to sections ke beech chhota divider */
+  .sb-section {
+    margin-bottom: 0;
+    padding: 6px 0;
+    border-top: 1px solid #eef0f6;
+  }
+
+  .sb-section:first-child {
+    border-top: none;
+    padding-top: 0;
+  }
+
+  .sb-item {
+    justify-content: center;
+    padding: 11px 0;
+    gap: 0;
+  }
+
+  .sb-item.active {
+    box-shadow: inset 3px 0 0 #6d4aff;
+  }
+
+  /* notification badge icon ke corner pe chhota dot */
+  .sb-badge {
+    position: absolute;
+    top: 3px;
+    right: 6px;
+    min-width: 15px;
+    height: 15px;
+    padding: 0 4px;
+    font-size: 9px;
+    border: 2px solid #fff;
+    box-sizing: content-box;
+  }
+
+  /* logout hamesha screen ke neeche pinned rehta hai */
+  .sb-logout {
+    margin-top: auto;
+    position: sticky;
+    bottom: 8px;
+    background: #fff;
+    flex-shrink: 0;
+  }
+}
+
+@media (max-width: 520px) {
+  .sb {
+    width: 56px;
+    min-width: 56px;
+    padding: 10px 6px;
+  }
+
+  .sb-logo {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+}

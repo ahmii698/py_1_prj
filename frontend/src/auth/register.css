@@ -1,0 +1,432 @@
+/* ============ Page ============ */
+.rg-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+  background:
+    radial-gradient(circle at 12% 18%, #ece6ff 0%, transparent 45%),
+    radial-gradient(circle at 88% 82%, #e2d9ff 0%, transparent 45%),
+    #f6f7fc;
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  color: #1c1c3c;
+}
+
+.rg-shell {
+  width: 100%;
+  max-width: 980px;
+  min-height: 620px;
+  display: grid;
+  grid-template-columns: 1fr 1.05fr;
+  background: #ffffff;
+  border: 1px solid #eef0f6;
+  border-radius: 22px;
+  overflow: hidden;
+  box-shadow: 0 24px 60px rgba(109, 74, 255, 0.14);
+}
+
+/* ============ Left brand panel ============ */
+.rg-side {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 34px 32px;
+  background: linear-gradient(155deg, #7c5cff 0%, #5b3df5 55%, #4a2fd0 100%);
+  color: #fff;
+  overflow: hidden;
+}
+
+.rg-side::before,
+.rg-side::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  pointer-events: none;
+}
+
+.rg-side::before {
+  width: 240px;
+  height: 240px;
+  right: -80px;
+  top: -70px;
+}
+
+.rg-side::after {
+  width: 200px;
+  height: 200px;
+  left: -70px;
+  bottom: -60px;
+}
+
+.rg-side-body {
+  position: relative;
+  z-index: 1;
+}
+
+.rg-side-body h1 {
+  margin: 0 0 12px;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.25;
+  color: #fff;
+}
+
+.rg-side-body > p {
+  margin: 0 0 22px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.rg-side-body ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rg-side-body li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: #fff;
+}
+
+.rg-side-body li svg {
+  flex-shrink: 0;
+  color: #c9bfff;
+}
+
+.rg-side small {
+  position: relative;
+  z-index: 1;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* ============ Brand ============ */
+.rg-brand {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.rg-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #7c5cff, #5b3df5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 14px rgba(109, 74, 255, 0.35);
+  flex-shrink: 0;
+}
+
+.rg-brand h2 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.1;
+}
+
+.rg-brand p {
+  margin: 2px 0 0;
+  font-size: 9.5px;
+  color: #8a8fa8;
+}
+
+.rg-brand.light h2 {
+  color: #fff;
+}
+
+.rg-brand.light p {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.rg-brand.light .rg-logo {
+  background: #fff;
+  box-shadow: 0 6px 14px rgba(20, 10, 80, 0.25);
+}
+
+.rg-brand.mobile {
+  display: none;
+  margin-bottom: 22px;
+}
+
+/* ============ Form ============ */
+.rg-form-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px 36px;
+}
+
+.rg-form {
+  width: 100%;
+  max-width: 360px;
+}
+
+.rg-form h1,
+.rg-success h1 {
+  margin: 0 0 6px;
+  font-size: 24px;
+  font-weight: 700;
+  color: #1c1c3c;
+}
+
+.rg-sub {
+  margin: 0 0 18px;
+  font-size: 12.5px;
+  color: #6b7090;
+}
+
+.rg-label {
+  margin: 0 0 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a4f6a;
+}
+
+/* Role selector */
+.rg-roles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.rg-role {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  border: 1.5px solid #e6e8f2;
+  border-radius: 11px;
+  background: #fafbff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7090;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.rg-role:hover {
+  border-color: #cfc3ff;
+  color: #6d4aff;
+}
+
+.rg-role.on {
+  border-color: #6d4aff;
+  background: #efeaff;
+  color: #6d4aff;
+  box-shadow: 0 0 0 3px rgba(109, 74, 255, 0.12);
+}
+
+/* Fields */
+.rg-field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 13px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4a4f6a;
+}
+
+.rg-input {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.rg-input > svg {
+  position: absolute;
+  left: 13px;
+  color: #9a9fb5;
+  pointer-events: none;
+}
+
+.rg-input input {
+  width: 100%;
+  height: 44px;
+  padding: 0 42px 0 40px;
+  border: 1px solid #e6e8f2;
+  border-radius: 11px;
+  background: #fafbff;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: #1c1c3c;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.rg-input input::placeholder {
+  color: #aab0c6;
+  font-weight: 400;
+}
+
+.rg-input input:focus {
+  background: #fff;
+  border-color: #b9a8ff;
+  box-shadow: 0 0 0 3px rgba(109, 74, 255, 0.13);
+}
+
+.rg-eye {
+  position: absolute;
+  right: 6px;
+  width: 34px;
+  height: 34px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  color: #8a8fa8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.rg-eye:hover {
+  background: #f5f3ff;
+  color: #6d4aff;
+}
+
+/* ============ Message ============ */
+.rg-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.rg-msg svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.rg-msg.error {
+  background: #ffe9ec;
+  color: #d92d45;
+}
+
+/* ============ Button ============ */
+.rg-btn {
+  width: 100%;
+  height: 46px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #7c5cff, #5b3df5);
+  color: #fff;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 8px 18px rgba(109, 74, 255, 0.3);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.2s ease;
+}
+
+.rg-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(109, 74, 255, 0.4);
+}
+
+.rg-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.rg-switch {
+  margin: 18px 0 0;
+  text-align: center;
+  font-size: 12.5px;
+  color: #6b7090;
+}
+
+.rg-switch a {
+  font-weight: 600;
+  color: #6d4aff;
+  text-decoration: none;
+}
+
+.rg-switch a:hover {
+  text-decoration: underline;
+}
+
+/* ============ Success ============ */
+.rg-success {
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+}
+
+.rg-success-icon {
+  width: 68px;
+  height: 68px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  background: #e3f8ee;
+  color: #16a864;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: rg-pop 0.35s ease;
+}
+
+.rg-success p {
+  margin: 0 0 22px;
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: #6b7090;
+}
+
+@keyframes rg-pop {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* ============ Responsive ============ */
+@media (max-width: 860px) {
+  .rg-shell {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 460px;
+    min-height: 0;
+  }
+  .rg-side {
+    display: none;
+  }
+  .rg-brand.mobile {
+    display: flex;
+  }
+  .rg-form-wrap {
+    padding: 28px 22px;
+  }
+}

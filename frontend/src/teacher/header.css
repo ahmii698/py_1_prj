@@ -1,0 +1,273 @@
+/* ===== Teacher Header ===== */
+.th-header {
+  --th-primary: #7c5cfc;
+  --th-text: #1e2150;
+  --th-muted: #6b7194;
+  --th-border: #e8eaf5;
+  --th-bg: #ffffff;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 14px 24px;
+  background: var(--th-bg);
+  border-bottom: 1px solid var(--th-border);
+  font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  box-sizing: border-box;
+}
+
+.th-header *,
+.th-header *::before,
+.th-header *::after {
+  box-sizing: border-box;
+}
+
+.th-header button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* ---------- Search ---------- */
+.th-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  max-width: 420px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid var(--th-border);
+  border-radius: 12px;
+  color: var(--th-muted);
+  box-shadow: 0 2px 8px rgba(80, 70, 160, 0.05);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.th-search:focus-within {
+  border-color: var(--th-primary);
+  box-shadow: 0 0 0 3px rgba(124, 92, 252, 0.12);
+}
+
+.th-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  color: var(--th-text);
+}
+
+.th-search input::placeholder {
+  color: var(--th-muted);
+}
+
+.th-search kbd {
+  padding: 3px 8px;
+  border: 1px solid var(--th-border);
+  border-radius: 6px;
+  background: #f6f7fd;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--th-muted);
+  white-space: nowrap;
+}
+
+/* ---------- Right side ---------- */
+.th-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.th-icon-btn {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--th-text);
+  transition: background 0.2s;
+}
+
+.th-icon-btn:hover {
+  background: #f3efff;
+  color: var(--th-primary);
+}
+
+.th-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 99px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  border: 2px solid var(--th-bg);
+  line-height: 1;
+}
+
+/* ---------- Profile ---------- */
+.th-profile-wrap {
+  position: relative;
+  margin-left: 6px;
+}
+
+.th-profile {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 8px;
+  border: none;
+  border-radius: 12px;
+  background: transparent;
+  transition: background 0.2s;
+}
+
+.th-profile:hover {
+  background: #f6f3ff;
+}
+
+.th-avatar {
+  width: 38px;
+  height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #8b6cff, #6a49f0);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.th-profile-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.25;
+}
+
+.th-profile-text strong {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--th-text);
+}
+
+.th-profile-text small {
+  font-size: 11px;
+  color: var(--th-muted);
+}
+
+.th-chevron {
+  color: var(--th-muted);
+  transition: transform 0.2s;
+}
+
+.th-chevron.open {
+  transform: rotate(180deg);
+}
+
+/* ---------- Dropdown ---------- */
+.th-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 200px;
+  padding: 8px;
+  background: var(--th-bg);
+  border: 1px solid var(--th-border);
+  border-radius: 12px;
+  box-shadow: 0 12px 30px rgba(60, 50, 130, 0.15);
+  animation: th-pop 0.15s ease;
+}
+
+@keyframes th-pop {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.th-dropdown button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  font-size: 13px;
+  color: var(--th-text);
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.th-dropdown button:hover {
+  background: #f3efff;
+  color: var(--th-primary);
+}
+
+.th-divider {
+  height: 1px;
+  margin: 6px 0;
+  background: var(--th-border);
+}
+
+.th-dropdown .th-logout {
+  color: #e03e3e;
+}
+
+.th-dropdown .th-logout:hover {
+  background: #ffe9e9;
+  color: #e03e3e;
+}
+
+/* ---------- Dark mode ---------- */
+[data-theme="dark"] .th-header {
+  --th-text: #e8eaff;
+  --th-muted: #9aa0c7;
+  --th-border: #2c2f55;
+  --th-bg: #181a38;
+}
+
+[data-theme="dark"] .th-search,
+[data-theme="dark"] .th-search kbd {
+  background: #1f2245;
+}
+
+[data-theme="dark"] .th-icon-btn:hover,
+[data-theme="dark"] .th-profile:hover,
+[data-theme="dark"] .th-dropdown button:hover {
+  background: #262a55;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 800px) {
+  .th-header {
+    padding: 12px 14px;
+  }
+
+  .th-profile-text,
+  .th-chevron {
+    display: none;
+  }
+
+  .th-search kbd {
+    display: none;
+  }
+}
