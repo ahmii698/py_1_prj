@@ -36,6 +36,12 @@ export default function Header({
     .join("")
     .toUpperCase();
 
+  // Dropdown band karke page par redirect
+  const goTo = (path: string) => {
+    setMenuOpen(false);
+    navigate(path);
+  };
+
   const handleLogout = () => {
     setMenuOpen(false);
     onLogout?.();
@@ -86,7 +92,11 @@ export default function Header({
       </div>
 
       <div className="th-right">
-        <button className="th-icon-btn" aria-label="Notifications">
+        <button
+          className="th-icon-btn"
+          aria-label="Notifications"
+          onClick={() => navigate("/teacher/notifications")}
+        >
           <Bell size={20} />
           {notificationCount > 0 && <span className="th-badge">{notificationCount}</span>}
         </button>
@@ -111,8 +121,12 @@ export default function Header({
 
           {menuOpen && (
             <div className="th-dropdown">
-              <button><User size={16} /> Teacher Profile</button>
-              <button><Settings size={16} /> Settings</button>
+              <button onClick={() => goTo("/teacher/profile")}>
+                <User size={16} /> Teacher Profile
+              </button>
+              <button onClick={() => goTo("/teacher/settings")}>
+                <Settings size={16} /> Settings
+              </button>
               <div className="th-divider" />
               <button className="th-logout" onClick={handleLogout}>
                 <LogOut size={16} /> Logout

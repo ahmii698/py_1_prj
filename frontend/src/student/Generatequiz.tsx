@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import type { ChangeEvent, DragEvent } from "react";
+import { useEffect, useRef, useState } from "react";
+import type { ChangeEvent, DragEvent, ReactNode } from "react";
 import {
   Sparkles,
   UploadCloud,
@@ -26,6 +26,11 @@ import {
   AlertCircle,
   CheckCircle2,
   RotateCcw,
+  Timer,
+  Send,
+  Trophy,
+  XCircle,
+  MinusCircle,
 } from "lucide-react";
 import Sidebar from "./sidebar";
 import Header from "./header";
@@ -67,7 +72,17 @@ const tips = [
   "The more focused your PDF, the better the quiz.",
 ];
 
-const recentQuizzes = [
+interface RecentQuiz {
+  title: string;
+  subject: string;
+  score: string;
+  percent: number;
+  date: string;
+  color: "purple" | "blue" | "green";
+  icon: ReactNode;
+}
+
+const initialRecent: RecentQuiz[] = [
   {
     title: "Data Structures & Algorithms",
     subject: "Computer Science",
@@ -102,15 +117,25 @@ interface Question {
   id: number;
   text: string;
   options: string[];
-  answer: number;
+  answer: number; // sahi option ka index
 }
 
 interface Quiz {
   id: string;
   title: string;
   difficulty: string;
-  timeLimit: number;
+  timeLimit: number; // minutes, 0 = no limit
   questions: Question[];
+}
+
+interface QuizResult {
+  correct: number;
+  wrong: number;
+  skipped: number;
+  total: number;
+  percent: number;
+  timeTaken: number; // seconds
+  autoSubmitted: boolean;
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -135,8 +160,8 @@ function makeMockQuiz(opts: {
         : `(${opts.difficulty}) Which of the following best describes concept ${i + 1} of "${subject}"?`,
       options: isTF
         ? ["True", "False"]
-        : [`Option A`, `Option B`, `Option C`, `Option D`].map(
-            (o, k) => `${o} for concept ${i + 1}${k === answer ? "" : ""}`
+        : ["Option A", "Option B", "Option C", "Option D"].map(
+            (o) => `${o} for concept ${i + 1}`
           ),
       answer,
     };
@@ -156,14 +181,37 @@ function formatSize(bytes: number) {
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
+function formatClock(totalSeconds: number) {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+function resultMessage(percent: number) {
+  if (percent >= 80) return "Excellent work! You really know this material.";
+  if (percent >= 60) return "Good job! A little more practice and you'll ace it.";
+  if (percent >= 40) return "Not bad, but review the topics you missed.";
+  return "Keep going! Revise the material and try again.";
+}
+
 function GenerateQuiz() {
   const inputRef = useRef<HTMLInputElement>(null);
+  const quizTopRef = useRef<HTMLElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
   const [dragging, setDragging] = useState(false);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [quiz, setQuiz] = useState<Quiz | null>(null);
+
+  // Quiz attempt state
+  const [answers, setAnswers] = useState<Record<number, number>>({});
+  const [submitted, setSubmitted] = useState(false);
+  const [result, setResult] = useState<QuizResult | null>(null);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const startedAt = useRef<number>(Date.now());
+
+  const [recentQuizzes, setRecentQuizzes] = useState<RecentQuiz[]>(initialRecent);
 
   const [numQuestions, setNumQuestions] = useState("10");
   const [difficulty, setDifficulty] = useState("medium");
@@ -172,8 +220,18 @@ function GenerateQuiz() {
   const [topic, setTopic] = useState("");
   const [timeLimit, setTimeLimit] = useState("0");
 
-  // Stepper: 1 = upload, 2 = generating, 3 = generated (ready to take)
-  const currentStep = quiz ? 3 : loading ? 2 : 1;
+  // Stepper: 1 = upload, 2 = generating, 3 = taking quiz, 4 = result
+  const currentStep = quiz ? (submitted ? 4 : 3) : loading ? 2 : 1;
+
+  const answeredCount = Object.keys(answers).length;
+
+  const startAttempt = (q: Quiz) => {
+    setAnswers({});
+    setSubmitted(false);
+    setResult(null);
+    setTimeLeft(q.timeLimit * 60);
+    startedAt.current = Date.now();
+  };
 
   const validateAndSet = (f: File | undefined | null) => {
     if (!f) return;
@@ -191,6 +249,8 @@ function GenerateQuiz() {
     }
     setFile(f);
     setQuiz(null);
+    setSubmitted(false);
+    setResult(null);
   };
 
   const onChoose = (e: ChangeEvent<HTMLInputElement>) => {
@@ -213,12 +273,24 @@ function GenerateQuiz() {
     setFile(null);
     setError("");
     setQuiz(null);
+    setSubmitted(false);
+    setResult(null);
   };
 
   const resetAll = () => {
     setFile(null);
     setQuiz(null);
     setError("");
+    setAnswers({});
+    setSubmitted(false);
+    setResult(null);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const scrollToQuiz = () => {
+    window.setTimeout(() => {
+      quizTopRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 50);
   };
 
   const handleGenerate = async () => {
@@ -226,11 +298,15 @@ function GenerateQuiz() {
     setLoading(true);
     setError("");
     setQuiz(null);
+    setSubmitted(false);
+    setResult(null);
 
     try {
+      let generated: Quiz;
+
       if (USE_MOCK) {
         await sleep(2000); // fake processing time
-        const mock = makeMockQuiz({
+        generated = makeMockQuiz({
           fileName: file.name,
           count: Number(numQuestions),
           difficulty,
@@ -239,37 +315,136 @@ function GenerateQuiz() {
           timeLimit: Number(timeLimit),
         });
         try {
-          localStorage.setItem("lastGeneratedQuiz", JSON.stringify(mock));
+          localStorage.setItem("lastGeneratedQuiz", JSON.stringify(generated));
         } catch {
           /* ignore */
         }
-        setQuiz(mock);
-        return;
+      } else {
+        const form = new FormData();
+        form.append("file", file);
+        form.append("num_questions", numQuestions);
+        form.append("difficulty", difficulty);
+        form.append("question_type", questionType);
+        form.append("pages", pages);
+        form.append("topic", topic.trim());
+        form.append("time_limit", timeLimit);
+
+        const res = await fetch(API_URL, { method: "POST", body: form });
+        if (!res.ok) {
+          const data = await res.json().catch(() => null);
+          throw new Error(data?.detail || "Failed to generate quiz.");
+        }
+        generated = await res.json();
       }
 
-      const form = new FormData();
-      form.append("file", file);
-      form.append("num_questions", numQuestions);
-      form.append("difficulty", difficulty);
-      form.append("question_type", questionType);
-      form.append("pages", pages);
-      form.append("topic", topic.trim());
-      form.append("time_limit", timeLimit);
-
-      const res = await fetch(API_URL, { method: "POST", body: form });
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        throw new Error(data?.detail || "Failed to generate quiz.");
-      }
-
-      const data = await res.json();
-      setQuiz(data);
+      startAttempt(generated);
+      setQuiz(generated);
+      scrollToQuiz();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
       setLoading(false);
     }
   };
+
+  const selectAnswer = (qid: number, idx: number) => {
+    if (submitted) return;
+    setAnswers((prev) => ({ ...prev, [qid]: idx }));
+  };
+
+  /* Quiz submit + score calculation */
+  const finishQuiz = (auto = false) => {
+    if (!quiz || submitted) return;
+
+    const unanswered = quiz.questions.length - answeredCount;
+    if (!auto && unanswered > 0) {
+      const ok = window.confirm(
+        `You have ${unanswered} unanswered question${
+          unanswered > 1 ? "s" : ""
+        }. Submit anyway?`
+      );
+      if (!ok) return;
+    }
+
+    let correct = 0;
+    let wrong = 0;
+    let skipped = 0;
+    quiz.questions.forEach((q) => {
+      const picked = answers[q.id];
+      if (picked === undefined) skipped++;
+      else if (picked === q.answer) correct++;
+      else wrong++;
+    });
+
+    const total = quiz.questions.length;
+    const percent = total ? Math.round((correct / total) * 100) : 0;
+    const timeTaken = Math.round((Date.now() - startedAt.current) / 1000);
+
+    setResult({
+      correct,
+      wrong,
+      skipped,
+      total,
+      percent,
+      timeTaken,
+      autoSubmitted: auto,
+    });
+    setSubmitted(true);
+
+    // Right side "Recent Quizzes" mein add karo
+    setRecentQuizzes((prev) =>
+      [
+        {
+          title: quiz.title,
+          subject: `${quiz.difficulty.charAt(0).toUpperCase()}${quiz.difficulty.slice(1)} • PDF Quiz`,
+          score: `${correct}/${total}`,
+          percent,
+          date: new Date().toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          }),
+          color: (percent >= 75 ? "green" : percent >= 50 ? "purple" : "blue") as
+            | "purple"
+            | "blue"
+            | "green",
+          icon: <FileText size={18} />,
+        },
+        ...prev,
+      ].slice(0, 3)
+    );
+
+    scrollToQuiz();
+  };
+
+  // Timer chalne wale effect ke liye latest finishQuiz ka reference
+  const finishRef = useRef(finishQuiz);
+  finishRef.current = finishQuiz;
+
+  // Countdown (sirf jab time limit set ho)
+  useEffect(() => {
+    if (!quiz || submitted || quiz.timeLimit <= 0) return;
+    const id = window.setInterval(() => {
+      setTimeLeft((t) => (t > 0 ? t - 1 : 0));
+    }, 1000);
+    return () => window.clearInterval(id);
+  }, [quiz, submitted]);
+
+  // Time khatam -> auto submit
+  useEffect(() => {
+    if (quiz && !submitted && quiz.timeLimit > 0 && timeLeft === 0) {
+      finishRef.current(true);
+    }
+  }, [timeLeft, quiz, submitted]);
+
+  const retakeQuiz = () => {
+    if (!quiz) return;
+    startAttempt(quiz);
+    scrollToQuiz();
+  };
+
+  const ringColor = (p: number) =>
+    p >= 75 ? "#22c55e" : p >= 50 ? "#6d4aff" : "#ef4444";
 
   return (
     <div className="gq-shell">
@@ -538,9 +713,9 @@ function GenerateQuiz() {
               </p>
             </section>
 
-            {/* Generated quiz preview */}
+            {/* ===== Quiz (attempt + result) ===== */}
             {quiz && (
-              <section className="gq-card gq-result">
+              <section className="gq-card gq-result" ref={quizTopRef}>
                 <div className="gq-result-head">
                   <div className="gq-result-ok">
                     <CheckCircle2 size={22} />
@@ -548,36 +723,200 @@ function GenerateQuiz() {
                   <div className="gq-result-title">
                     <h2>{quiz.title}</h2>
                     <p>
-                      {quiz.questions.length} questions generated •{" "}
-                      {quiz.difficulty} •{" "}
+                      {quiz.questions.length} questions • {quiz.difficulty} •{" "}
                       {quiz.timeLimit ? `${quiz.timeLimit} min` : "No time limit"}
                     </p>
                   </div>
+
+                  {!submitted && quiz.timeLimit > 0 && (
+                    <div className={`gq-timer ${timeLeft <= 60 ? "low" : ""}`}>
+                      <Timer size={14} />
+                      {formatClock(timeLeft)}
+                    </div>
+                  )}
+
                   <button type="button" className="gq-result-again" onClick={resetAll}>
                     <RotateCcw size={14} /> New Quiz
                   </button>
                 </div>
 
-                <ol className="gq-qlist">
-                  {quiz.questions.map((q) => (
-                    <li key={q.id} className="gq-q">
-                      <p className="gq-q-text">
-                        <b>Q{q.id}.</b> {q.text}
+                {/* ---------- RESULT SUMMARY ---------- */}
+                {submitted && result && (
+                  <div className="gq-summary">
+                    <div
+                      className="gq-ring"
+                      style={{
+                        background: `conic-gradient(${ringColor(
+                          result.percent
+                        )} ${result.percent * 3.6}deg, #ece9f8 0deg)`,
+                      }}
+                    >
+                      <div className="gq-ring-inner">
+                        <strong>{result.percent}%</strong>
+                        <span>Score</span>
+                      </div>
+                    </div>
+
+                    <div className="gq-summary-body">
+                      <h3>
+                        <Trophy size={18} /> Your Result
+                      </h3>
+                      <p className="gq-summary-score">
+                        You got <b>{result.correct}</b> out of{" "}
+                        <b>{result.total}</b> correct
                       </p>
-                      <ul className="gq-q-options">
-                        {q.options.map((o, idx) => (
-                          <li
-                            key={idx}
-                            className={idx === q.answer ? "correct" : ""}
-                          >
-                            {String.fromCharCode(65 + idx)}. {o}
-                            {idx === q.answer && <Check size={13} />}
-                          </li>
-                        ))}
-                      </ul>
-                    </li>
-                  ))}
+                      <p className="gq-summary-msg">
+                        {result.autoSubmitted && "Time's up! Quiz was submitted automatically. "}
+                        {resultMessage(result.percent)}
+                      </p>
+
+                      <div className="gq-stats">
+                        <div className="gq-stat good">
+                          <CheckCircle2 size={16} />
+                          <b>{result.correct}</b>
+                          <span>Correct</span>
+                        </div>
+                        <div className="gq-stat bad">
+                          <XCircle size={16} />
+                          <b>{result.wrong}</b>
+                          <span>Wrong</span>
+                        </div>
+                        <div className="gq-stat skip">
+                          <MinusCircle size={16} />
+                          <b>{result.skipped}</b>
+                          <span>Skipped</span>
+                        </div>
+                        <div className="gq-stat time">
+                          <Clock size={16} />
+                          <b>{formatClock(result.timeTaken)}</b>
+                          <span>Time taken</span>
+                        </div>
+                      </div>
+
+                      <div className="gq-summary-actions">
+                        <button type="button" className="gq-btn-primary" onClick={retakeQuiz}>
+                          <RotateCcw size={15} /> Retake Quiz
+                        </button>
+                        <button type="button" className="gq-btn-ghost" onClick={resetAll}>
+                          <Upload size={15} /> Generate New Quiz
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Progress (sirf quiz dete waqt) */}
+                {!submitted && (
+                  <div className="gq-progress">
+                    <div className="gq-progress-text">
+                      <span>
+                        Answered <b>{answeredCount}</b> / {quiz.questions.length}
+                      </span>
+                      <span>Select one option for each question</span>
+                    </div>
+                    <div className="gq-progress-bar">
+                      <div
+                        style={{
+                          width: `${(answeredCount / quiz.questions.length) * 100}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {submitted && <h3 className="gq-review-title">Answer Review</h3>}
+
+                {/* ---------- QUESTIONS ---------- */}
+                <ol className="gq-qlist">
+                  {quiz.questions.map((q) => {
+                    const picked = answers[q.id];
+                    const isCorrect = submitted && picked === q.answer;
+                    const isWrong = submitted && picked !== undefined && picked !== q.answer;
+                    const isSkipped = submitted && picked === undefined;
+
+                    return (
+                      <li
+                        key={q.id}
+                        className={`gq-q ${
+                          submitted
+                            ? isCorrect
+                              ? "q-correct"
+                              : isWrong
+                              ? "q-wrong"
+                              : "q-skipped"
+                            : ""
+                        }`}
+                      >
+                        <p className="gq-q-text">
+                          <b>Q{q.id}.</b> {q.text}
+                          {submitted && (
+                            <span
+                              className={`gq-q-tag ${
+                                isCorrect ? "ok" : isWrong ? "no" : "skip"
+                              }`}
+                            >
+                              {isCorrect ? "Correct" : isWrong ? "Wrong" : "Skipped"}
+                            </span>
+                          )}
+                        </p>
+
+                        <ul className="gq-q-options">
+                          {q.options.map((o, idx) => {
+                            const isPicked = picked === idx;
+                            const isAnswer = q.answer === idx;
+
+                            let cls = "gq-opt";
+                            if (!submitted && isPicked) cls += " selected";
+                            if (submitted && isAnswer) cls += " correct";
+                            if (submitted && isPicked && !isAnswer) cls += " wrong";
+
+                            return (
+                              <li key={idx}>
+                                <button
+                                  type="button"
+                                  className={cls}
+                                  onClick={() => selectAnswer(q.id, idx)}
+                                  disabled={submitted}
+                                >
+                                  <span>
+                                    {String.fromCharCode(65 + idx)}. {o}
+                                  </span>
+                                  {submitted && isAnswer && <Check size={14} />}
+                                  {submitted && isPicked && !isAnswer && <X size={14} />}
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ul>
+
+                        {isSkipped && (
+                          <p className="gq-q-note">
+                            You skipped this question. Correct answer:{" "}
+                            <b>{String.fromCharCode(65 + q.answer)}</b>
+                          </p>
+                        )}
+                      </li>
+                    );
+                  })}
                 </ol>
+
+                {/* ---------- SUBMIT BAR ---------- */}
+                {!submitted && (
+                  <div className="gq-submit-bar">
+                    <p>
+                      {answeredCount === quiz.questions.length
+                        ? "All questions answered. Ready to submit!"
+                        : `${quiz.questions.length - answeredCount} question(s) left`}
+                    </p>
+                    <button
+                      type="button"
+                      className="gq-submit"
+                      onClick={() => finishQuiz(false)}
+                    >
+                      <Send size={16} /> Submit Quiz
+                    </button>
+                  </div>
+                )}
               </section>
             )}
           </div>
@@ -626,8 +965,8 @@ function GenerateQuiz() {
               </div>
 
               <div className="gq-recent">
-                {recentQuizzes.map((q) => (
-                  <button type="button" className="gq-recent-item" key={q.title}>
+                {recentQuizzes.map((q, i) => (
+                  <button type="button" className="gq-recent-item" key={`${q.title}-${i}`}>
                     <div className={`gq-recent-icon ${q.color}`}>{q.icon}</div>
                     <div className="gq-recent-info">
                       <p className="gq-recent-title">{q.title}</p>

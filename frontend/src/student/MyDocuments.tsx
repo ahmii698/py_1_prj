@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import type { ReactNode } from "react";
+import { useMemo, useRef, useState } from "react";
+import type { ChangeEvent, ReactNode } from "react";
 import {
   FolderOpen,
   Upload,
@@ -44,15 +44,20 @@ interface Doc {
   id: number;
   title: string;
   subject: Subject;
-  pages: number;
+  pages: number; // 0 = abhi pata nahi
   date: string; // YYYY-MM-DD
   status: Status;
+  sizeMB?: number; // sirf upload hui files ke liye
+  url?: string; // upload hui file ka local link (view/download ke liye)
   cover: { a: string; b: string; lines: string[]; icon: ReactNode };
 }
 
 const ICON = 30;
+const MAX_SIZE_MB = 20;
+const BASE_STORAGE_MB = 24;
+const STORAGE_LIMIT_MB = 100;
 
-const docs: Doc[] = [
+const initialDocs: Doc[] = [
   {
     id: 1,
     title: "Python Programming",
@@ -159,6 +164,7 @@ const formatDate = (iso: string) =>
   });
 
 function MyDocuments() {
+  const [docs, setDocs] = useState<Doc[]>(initialDocs);
   const [query, setQuery] = useState("");
   const [subject, setSubject] = useState<string>("All Subjects");
   const [status, setStatus] = useState<string>("All Status");
@@ -166,6 +172,98 @@ function MyDocuments() {
   const [range, setRange] = useState<string>("Last 30 Days");
   const [view, setView] = useState<"grid" | "list">("grid");
   const [selected, setSelected] = useState<number[]>([]);
+  const [notice, setNotice] = useState<{ type: "ok" | "error"; text: string } | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const showNotice = (type: "ok" | "error", text: string) => {
+    setNotice({ type, text });
+    window.setTimeout(() => setNotice(null), 4000);
+  };
+
+  // Upload PDF button click -> file picker khulega
+  const openPicker = () => fileInputRef.current?.click();
+
+  const handleFiles = (e: ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files ?? []);
+    e.target.value = ""; // taake same file dobara bhi select ho sake
+    if (files.length === 0) return;
+
+    const added: Doc[] = [];
+    const errors: string[] = [];
+
+    files.forEach((file, i) => {
+      const isPdf =
+        file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+      if (!isPdf) {
+        errors.push(`"${file.name}" PDF nahi hai`);
+        return;
+      }
+      const sizeMB = file.size / (1024 * 1024);
+      if (sizeMB > MAX_SIZE_MB) {
+        errors.push(`"${file.name}" ${MAX_SIZE_MB} MB se bari hai`);
+        return;
+      }
+
+      const title = file.name.replace(/\.pdf$/i, "");
+      added.push({
+        id: Date.now() + i,
+        title,
+        subject: "Others",
+        pages: 0,
+        date: new Date().toISOString().slice(0, 10),
+        status: "Processing",
+        sizeMB,
+        url: URL.createObjectURL(file),
+        cover: {
+          a: "#1b1f3b",
+          b: "#0d1024",
+          lines: [title.length > 16 ? title.slice(0, 16) + "…" : title],
+          icon: <FileText size={ICON} color="#a78bfa" />,
+        },
+      });
+    });
+
+    if (added.length > 0) {
+      setDocs((prev) => [...added, ...prev]);
+
+      // Abhi mock hai: 2 second baad "Processed" ho jayega.
+      // Backend ready hone par yahan asli upload API call aayegi.
+      window.setTimeout(() => {
+        const ids = added.map((a) => a.id);
+        setDocs((prev) =>
+          prev.map((d) => (ids.includes(d.id) ? { ...d, status: "Processed" } : d))
+        );
+      }, 2000);
+    }
+
+    if (errors.length > 0) {
+      showNotice("error", errors.join(", "));
+    } else if (added.length > 0) {
+      showNotice(
+        "ok",
+        added.length === 1
+          ? `"${added[0].title}" upload ho gayi.`
+          : `${added.length} PDFs upload ho gayi.`
+      );
+    }
+  };
+
+  const viewDoc = (d: Doc) => {
+    if (d.url) window.open(d.url, "_blank");
+    else showNotice("error", "Yeh sample document hai, iski file maujood nahi.");
+  };
+
+  const downloadDoc = (d: Doc) => {
+    if (!d.url) {
+      showNotice("error", "Yeh sample document hai, iski file maujood nahi.");
+      return;
+    }
+    const a = document.createElement("a");
+    a.href = d.url;
+    a.download = `${d.title}.pdf`;
+    a.click();
+  };
 
   const visible = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -180,7 +278,7 @@ function MyDocuments() {
       if (sort === "Name (A-Z)") return a.title.localeCompare(b.title);
       return b.date.localeCompare(a.date);
     });
-  }, [query, subject, status, sort]);
+  }, [docs, query, subject, status, sort]);
 
   const toggleSelect = (id: number) =>
     setSelected((prev) =>
@@ -198,7 +296,12 @@ function MyDocuments() {
   const subjectCount = (s: Subject) => docs.filter((d) => d.subject === s).length;
   const statusCount = (s: Status) => docs.filter((d) => d.status === s).length;
 
-  const recent = [docs[2], docs[0], docs[3]];
+  const totalPages = docs.reduce((sum, d) => sum + d.pages, 0);
+  const uploadedMB = docs.reduce((sum, d) => sum + (d.sizeMB ?? 0), 0);
+  const storageUsed = Math.round(BASE_STORAGE_MB + uploadedMB);
+
+  // Sab se naye 3 documents
+  const recent = [...docs].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3);
 
   return (
     <div className="md-layout">
@@ -224,10 +327,35 @@ function MyDocuments() {
                   </p>
                 </div>
               </div>
-              <button type="button" className="md-upload-btn">
+
+              {/* Hidden file input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/pdf,.pdf"
+                multiple
+                onChange={handleFiles}
+                style={{ display: "none" }}
+              />
+              <button type="button" className="md-upload-btn" onClick={openPicker}>
                 <Upload size={15} /> Upload PDF
               </button>
             </div>
+
+            {/* Upload message */}
+            {notice && (
+              <div
+                className="md-tip"
+                style={
+                  notice.type === "error"
+                    ? { background: "#ffe6e9", color: "#ef4458" }
+                    : undefined
+                }
+              >
+                <strong>{notice.type === "error" ? "Error:" : "Done:"}</strong>
+                <span>{notice.text}</span>
+              </div>
+            )}
 
             {/* Stats */}
             <div className="md-stats">
@@ -254,7 +382,7 @@ function MyDocuments() {
                   <span className="ic"><Layers size={16} /></span>
                   <span>Total Pages</span>
                 </div>
-                <p className="val">1,248</p>
+                <p className="val">{totalPages.toLocaleString()}</p>
                 <p className="delta">↑ +342 this week</p>
               </div>
 
@@ -263,8 +391,8 @@ function MyDocuments() {
                   <span className="ic"><HardDrive size={16} /></span>
                   <span>Storage Used</span>
                 </div>
-                <p className="val">24 MB</p>
-                <p className="muted">of 100 MB</p>
+                <p className="val">{storageUsed} MB</p>
+                <p className="muted">of {STORAGE_LIMIT_MB} MB</p>
               </div>
 
               <div className="md-promo">
@@ -368,7 +496,9 @@ function MyDocuments() {
                         {d.subject}
                       </span>
                       <div className="md-meta">
-                        <span><FileText size={11} /> {d.pages} pages</span>
+                        <span>
+                          <FileText size={11} /> {d.pages > 0 ? `${d.pages} pages` : "— pages"}
+                        </span>
                         <span><Calendar size={11} /> {formatDate(d.date)}</span>
                       </div>
                     </div>
@@ -377,10 +507,20 @@ function MyDocuments() {
                       <button type="button" className="md-primary">
                         {d.status === "Processing" ? "View Details" : "Generate Quiz"}
                       </button>
-                      <button type="button" className="md-icon-btn" aria-label="View">
+                      <button
+                        type="button"
+                        className="md-icon-btn"
+                        aria-label="View"
+                        onClick={() => viewDoc(d)}
+                      >
                         <Eye size={14} />
                       </button>
-                      <button type="button" className="md-icon-btn" aria-label="Download">
+                      <button
+                        type="button"
+                        className="md-icon-btn"
+                        aria-label="Download"
+                        onClick={() => downloadDoc(d)}
+                      >
                         <Download size={14} />
                       </button>
                       <button type="button" className="md-icon-btn" aria-label="Move">
