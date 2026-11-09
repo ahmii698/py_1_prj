@@ -34,7 +34,7 @@ import {
 } from "lucide-react";
 import Sidebar from "./sidebar";
 import Header from "./header";
-import "./generatequiz.css";
+import "./Generatequiz.css";
 
 const MAX_SIZE_MB = 10;
 const API_URL = "http://localhost:8000/api/quiz/generate";
